@@ -1,9 +1,9 @@
 // @ts-nocheck
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { PhotoIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
-import { uploadImage } from '../services/api';
+import { uploadImage, getStorageStatus } from '../services/api';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/png'];
@@ -12,11 +12,33 @@ const UploadForm: React.FC = () => {
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [storageStatus, setStorageStatus] = useState<{is_enabled_storage: string, status: string} | null>(null);
   const navigate = useNavigate();
+
+  // Fetch storage status on component mount
+  useEffect(() => {
+    const checkStorageStatus = async () => {
+      try {
+        const status = await getStorageStatus();
+        setStorageStatus(status);
+      } catch (err) {
+        console.error('Failed to fetch storage status:', err);
+        setStorageStatus({ is_enabled_storage: 'unknown', status: 'error' });
+      }
+    };
+    
+    checkStorageStatus();
+  }, []);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     // Reset error state
     setError(null);
+
+    // Check if storage is available
+    if (storageStatus && storageStatus.status !== 'active') {
+      setError('Storage service is currently unavailable. Please try again later.');
+      return;
+    }
 
     // Validate file
     const file = acceptedFiles[0];
@@ -56,7 +78,7 @@ const UploadForm: React.FC = () => {
     } finally {
       setIsUploading(false);
     }
-  }, [navigate]);
+  }, [navigate, storageStatus]);
 
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     onDrop,
@@ -145,6 +167,28 @@ const UploadForm: React.FC = () => {
         <div className="mt-8 flex justify-center">
           <div className="film-spinner" aria-label="Uploading..."></div>
           <span className="sr-only">Uploading...</span>
+        </div>
+      )}
+
+      {/* Storage Status Indicator */}
+      {storageStatus && (
+        <div className={`mt-4 p-3 rounded-md flex items-center ${
+          storageStatus.status === 'active' 
+            ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
+            : 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800'
+        }`}>
+          <div className={`h-3 w-3 rounded-full mr-2 ${
+            storageStatus.status === 'active' ? 'bg-green-500' : 'bg-yellow-500'
+          }`}></div>
+          <span className={`${
+            storageStatus.status === 'active' 
+              ? 'text-green-700 dark:text-green-400' 
+              : 'text-yellow-700 dark:text-yellow-400'
+          }`}>
+            Storage: {storageStatus.is_enabled_storage === 'disabled' 
+              ? 'Disabled' 
+              : `${storageStatus.is_enabled_storage.charAt(0).toUpperCase() + storageStatus.is_enabled_storage.slice(1)} (${storageStatus.status})`}
+          </span>
         </div>
       )}
 
