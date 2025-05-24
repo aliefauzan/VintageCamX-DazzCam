@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowPathIcon, CheckIcon } from '@heroicons/react/24/outline';
-import { processImage, processCustomCrop, CropData } from '../services/api';
+import { processImage, processCustomCrop, CropData, getImagePreviewUrl } from '../services/api';
 
 interface AspectRatio {
   label: string;
@@ -34,9 +34,8 @@ const ImageEditor: React.FC = () => {
   // Load image preview
   useEffect(() => {
     if (imageId) {
-      // In a real app, we would fetch the image from the server
-      // For now, we'll just use a placeholder
-      setImageUrl(`https://source.unsplash.com/random/800x600?vintage&sig=${imageId}`);
+      // Use our actual image preview endpoint
+      setImageUrl(getImagePreviewUrl(imageId));
     }
   }, [imageId]);
 
