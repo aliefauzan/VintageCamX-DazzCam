@@ -15,10 +15,9 @@ const App: React.FC = () => {
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };
-
   return (
     <Router>
-      <div className={`min-h-screen flex flex-col ${darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+      <div className={`min-h-screen flex flex-col ${darkMode ? 'dark bg-gray-900 text-white' : 'bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 text-gray-900'}`}>
         <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         <main className="flex-grow container mx-auto px-4 py-8">
           <Routes>
