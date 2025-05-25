@@ -1,8 +1,8 @@
 // @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowDownTrayIcon, ArrowLeftIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
-import { getDownloadUrl } from '../services/api';
+import { ArrowDownTrayIcon, ArrowLeftIcon, ExclamationCircleIcon, CheckCircleIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { getDownloadUrl, getProcessedImageViewUrl } from '../services/api';
 
 const DownloadPage: React.FC = () => {
   const { processedId } = useParams<{ processedId: string }>();
@@ -10,43 +10,49 @@ const DownloadPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string>('');
   const downloadUrl = processedId ? getDownloadUrl(processedId) : '';
-
   useEffect(() => {
     if (!processedId) {
       setError('No image ID provided');
       setLoading(false);
       return;
-    }
-
-    // In a real app, we would fetch the image from the server
-    // For now, we'll just use a placeholder with a delay to simulate loading
-    const timer = setTimeout(() => {
+    }    // Load the actual processed image from the backend
+    const loadProcessedImage = async () => {
       try {
-        // Simulate a potential error for invalid IDs (e.g., if ID is 'error')
-        if (processedId === 'error') {
-          throw new Error('Image not found');
+        // Use the view URL for displaying the image (not forcing download)
+        const viewImageUrl = getProcessedImageViewUrl(processedId);
+        
+        // Test if the image exists by making a HEAD request
+        const response = await fetch(viewImageUrl, { method: 'HEAD' });
+        
+        if (!response.ok) {
+          throw new Error(`Image not found (${response.status})`);
         }
         
-        setImageUrl(`https://source.unsplash.com/random/800x600?vintage&sig=${processedId}`);
+        // If successful, set the image URL for display
+        setImageUrl(viewImageUrl);
         setLoading(false);
       } catch (err) {
-        console.error('Failed to load image:', err);
+        console.error('Failed to load processed image:', err);
         setError('Failed to load the processed image. It may have expired or been deleted.');
         setLoading(false);
       }
-    }, 1500);
+    };
 
+    // Add a small delay to show the loading state
+    const timer = setTimeout(loadProcessedImage, 1000);
     return () => clearTimeout(timer);
   }, [processedId]);
-
   const handleDownload = () => {
-    if (!imageUrl) {
+    if (!processedId) {
       setError('Cannot download image. Please try again.');
       return;
     }
     
-    // In a real app, this would trigger the download from the server
-    window.open(downloadUrl, '_blank');
+    // Use the backend download URL to trigger file download
+    const downloadLink = document.createElement('a');
+    downloadLink.href = downloadUrl;
+    downloadLink.download = `vintagecam-${processedId}.jpg`;
+    downloadLink.click();
   };
 
   // Handle image loading error
@@ -54,78 +60,166 @@ const DownloadPage: React.FC = () => {
     setError('Failed to load the processed image. It may have expired or been deleted.');
     setImageUrl('');
   };
-
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          Your Vintage Photo is Ready!
-        </h1>
-        <p className="text-gray-600 dark:text-gray-300">
-          Download your image or create a new one
-        </p>
+    <div className="max-w-4xl mx-auto">
+      {/* Vintage Header */}
+      <div className="text-center mb-8">
+        <div className="flex justify-center items-center mb-4">
+          <CheckCircleIcon className="h-16 w-16 text-green-600 mr-3" />
+          <div>
+            <h1 className="vintage-heading text-4xl text-amber-900 mb-2">
+              Development Complete!
+            </h1>
+            <p className="text-xl text-amber-800 font-vintage italic">
+              Your film has been expertly processed
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-center items-center mt-4 space-x-2">
+          <SparklesIcon className="h-5 w-5 text-amber-600" />
+          <span className="text-amber-700 font-medium">Professional Quality • Vintage Authentic</span>
+          <SparklesIcon className="h-5 w-5 text-amber-600" />
+        </div>
       </div>
 
-      <div className="card mb-6">
-        {loading ? (
-          <div className="h-64 flex flex-col items-center justify-center p-6">
-            <div className="film-spinner mb-4"></div>
-            <p className="text-gray-500 dark:text-gray-400">Finalizing your vintage image...</p>
+      <div className="grid lg:grid-cols-3 gap-8">
+        {/* Main Image Display */}
+        <div className="lg:col-span-2">
+          <div className="card-vintage p-6">
+            <h3 className="vintage-heading text-xl mb-4 flex items-center">
+              <span className="mr-2">🖼️</span>
+              Your Masterpiece
+            </h3>
+            
+            {loading ? (
+              <div className="h-96 flex flex-col items-center justify-center">
+                <div className="film-spinner mb-6"></div>
+                <div className="text-center">
+                  <p className="text-xl font-vintage text-amber-800 mb-2">
+                    Final development in progress...
+                  </p>
+                  <p className="text-amber-600">
+                    Applying finishing touches with vintage precision
+                  </p>
+                </div>
+              </div>
+            ) : error ? (
+              <div className="h-96 flex flex-col items-center justify-center text-center">
+                <ExclamationCircleIcon className="h-16 w-16 text-red-500 mb-4" />
+                <h4 className="text-xl font-vintage text-red-800 mb-2">Development Failed</h4>
+                <p className="text-red-600 mb-6">{error}</p>
+                <Link to="/" className="btn-vintage">
+                  Return to Studio
+                </Link>
+              </div>
+            ) : (              <div className="relative film-border">
+                <img 
+                  src={imageUrl} 
+                  alt="Processed with vintage film effect" 
+                  className="w-full h-auto rounded"
+                  onError={handleImageError}
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/0 to-black/60 flex items-end justify-center p-6 opacity-0 hover:opacity-100 transition-opacity rounded">
+                  <div className="text-center">
+                    <p className="text-white font-vintage mb-3">Ready for Download</p>
+                    <button
+                      onClick={handleDownload}
+                      className="btn-vintage bg-white text-amber-900 hover:bg-amber-50"
+                    >
+                      <ArrowDownTrayIcon className="h-5 w-5 mr-2 inline" />
+                      Download High Quality
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-        ) : error ? (
-          <div className="p-6 text-center">
-            <ExclamationCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <p className="text-red-500 dark:text-red-400 mb-4">{error}</p>
-            <Link to="/" className="btn btn-primary">
-              Try Again
-            </Link>
+        </div>
+
+        {/* Download Options */}
+        <div className="space-y-6">
+          <div className="card-vintage p-6">
+            <h3 className="vintage-heading text-xl mb-4 flex items-center">
+              <span className="mr-2">⬇️</span>
+              Download Options
+            </h3>
+            
+            {!loading && !error && imageUrl && (
+              <div className="space-y-4">
+                <button
+                  onClick={handleDownload}
+                  className="btn-vintage w-full py-4 text-lg"
+                >
+                  <ArrowDownTrayIcon className="h-6 w-6 mr-2 inline" />
+                  Download Original Quality
+                </button>
+                
+                <div className="p-4 bg-amber-100 rounded-lg border border-amber-300">
+                  <h4 className="font-vintage font-semibold text-amber-900 mb-2">
+                    📋 Photo Details
+                  </h4>
+                  <div className="text-sm text-amber-800 space-y-1">
+                    <p><strong>Format:</strong> High Resolution JPEG</p>
+                    <p><strong>Process:</strong> Vintage Film Emulation</p>
+                    <p><strong>Quality:</strong> Professional Grade</p>
+                    <p><strong>File ID:</strong> {processedId}</p>
+                  </div>
+                </div>
+                
+                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center mb-2">
+                    <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2" />
+                    <span className="font-vintage font-semibold text-green-800">Processing Complete</span>
+                  </div>
+                  <p className="text-sm text-green-700">
+                    Your image has been enhanced with professional-grade vintage film characteristics.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="relative">
-            <img 
-              src={imageUrl} 
-              alt="Processed photo with vintage effect" 
-              className="w-full h-auto"
-              onError={handleImageError}
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/0 to-black/50 flex items-end justify-center p-6 opacity-0 hover:opacity-100 transition-opacity">
-              <button
-                onClick={handleDownload}
-                className="btn btn-primary flex items-center"
-              >
-                <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
-                Download
-              </button>
+
+          <div className="card-vintage p-6">
+            <h3 className="vintage-heading text-xl mb-4 flex items-center">
+              <span className="mr-2">🎬</span>
+              Next Steps
+            </h3>
+            
+            <div className="space-y-3">
+              <Link to="/" className="btn-vintage w-full py-3 text-center block">
+                <ArrowLeftIcon className="h-5 w-5 mr-2 inline" />
+                Process Another Photo
+              </Link>
+              
+              <div className="text-center">
+                <p className="text-sm text-amber-700 font-vintage italic">
+                  Create your vintage collection
+                </p>
+              </div>
             </div>
           </div>
-        )}
-      </div>
 
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <Link to="/" className="btn btn-secondary flex items-center">
-          <ArrowLeftIcon className="h-5 w-5 mr-2" />
-          Upload New Image
-        </Link>
-        
-        {!loading && !error && imageUrl && (
-          <button
-            onClick={handleDownload}
-            className="btn btn-primary flex items-center"
-          >
-            <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
-            Download Image
-          </button>
-        )}
-      </div>
-
-      <div className="mt-8 p-4 bg-gray-50 rounded-lg dark:bg-gray-800">
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-          Note
-        </h2>
-        <p className="text-gray-600 dark:text-gray-300 text-sm">
-          Your processed image will be automatically deleted after 24 hours for privacy reasons.
-          Please download your image if you wish to keep it.
-        </p>
+          <div className="card-vintage p-6">
+            <h3 className="vintage-heading text-xl mb-4 flex items-center">
+              <span className="mr-2">⚠️</span>
+              Important Notice
+            </h3>
+            
+            <div className="space-y-3 text-sm text-amber-800">
+              <p className="font-vintage">
+                <strong>🕒 Storage Policy:</strong> Your processed image will be automatically removed after 24 hours for privacy and security.
+              </p>
+              
+              <p className="font-vintage">
+                <strong>💾 Recommendation:</strong> Download your image now to ensure you don't lose your work.
+              </p>
+              
+              <p className="font-vintage">
+                <strong>🔒 Privacy:</strong> We don't store or share your images beyond the processing period.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
