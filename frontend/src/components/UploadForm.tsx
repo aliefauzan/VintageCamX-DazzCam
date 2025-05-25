@@ -2,7 +2,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
-import { PhotoIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { PhotoIcon, ExclamationCircleIcon, CameraIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { uploadImage, getStorageStatus } from '../services/api';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -104,116 +104,211 @@ const UploadForm: React.FC = () => {
       }
     }
   }, [fileRejections]);
-
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          VintageCamX
+    <div className="max-w-4xl mx-auto">
+      {/* Vintage Camera Header */}
+      <div className="text-center mb-12">
+        <div className="flex justify-center items-center mb-6">
+          <div className="relative">
+            <CameraIcon className="h-16 w-16 text-amber-700" />
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+        <h1 className="vintage-heading text-5xl mb-3">
+          VintageCamX DazzCam
         </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-300">
-          Upload your photo to add a vintage filter and smart crop
+        <p className="text-xl text-amber-800 font-vintage italic">
+          Transform your photos with authentic film aesthetics
         </p>
-      </div>
-
-      <div
-        {...getRootProps()}
-        className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors
-          ${isDragActive 
-            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
-            : selectedFile 
-              ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
-              : 'border-gray-300 hover:border-indigo-400 dark:border-gray-600 dark:hover:border-indigo-500'
-          }
-        `}
-      >
-        <input {...getInputProps()} />
-        <div className="space-y-4">
-          <PhotoIcon className="h-16 w-16 mx-auto text-gray-400 dark:text-gray-500" />
-          {isDragActive ? (
-            <p className="text-lg font-medium text-indigo-600 dark:text-indigo-400">
-              Drop your image here...
-            </p>
-          ) : selectedFile ? (
-            <div>
-              <p className="text-lg font-medium text-green-600 dark:text-green-400">
-                File selected: {selectedFile.name}
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Click or drag to replace
-              </p>
-            </div>
-          ) : (
-            <div>
-              <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
-                Drag & drop your image here
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                or click to browse (JPEG, PNG up to 10MB)
-              </p>
-            </div>
-          )}
+        <div className="flex justify-center items-center mt-4 space-x-2">
+          <SparklesIcon className="h-5 w-5 text-amber-600" />
+          <span className="text-amber-700 font-medium">Professional Film Emulation</span>
+          <SparklesIcon className="h-5 w-5 text-amber-600" />
         </div>
       </div>
 
-      {error && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center dark:bg-red-900/20 dark:border-red-800">
-          <ExclamationCircleIcon className="h-5 w-5 text-red-500 mr-2" />
-          <span className="text-red-700 dark:text-red-400">{error}</span>
+      {/* Enhanced Upload Area */}
+      <div className="card-vintage p-8 mb-8">
+        <div
+          {...getRootProps()}
+          className={`border-3 border-dashed rounded-xl p-16 text-center cursor-pointer transition-all duration-300
+            ${isDragActive 
+              ? 'border-amber-500 bg-amber-100 scale-102' 
+              : selectedFile 
+                ? 'border-green-600 bg-green-50' 
+                : 'border-amber-400 hover:border-amber-500 hover:bg-amber-100/50'
+            }
+          `}
+        >
+          <input {...getInputProps()} />
+          <div className="space-y-6">
+            <div className="relative">
+              <PhotoIcon className="h-20 w-20 mx-auto text-amber-600" />
+              {selectedFile && (
+                <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm">✓</span>
+                </div>
+              )}
+            </div>
+            
+            {isDragActive ? (
+              <div className="space-y-3">
+                <p className="text-2xl font-vintage font-semibold text-amber-700">
+                  Drop your masterpiece here...
+                </p>
+                <p className="text-amber-600">Release to begin the transformation</p>
+              </div>
+            ) : selectedFile ? (
+              <div className="space-y-3">
+                <p className="text-2xl font-vintage font-semibold text-green-700">
+                  📸 {selectedFile.name}
+                </p>
+                <p className="text-green-600 font-medium">
+                  Ready for vintage processing
+                </p>
+                <p className="text-sm text-amber-600">
+                  Click or drag to replace with another image
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-2xl font-vintage font-semibold text-amber-800">
+                  Drop your photo here
+                </p>
+                <p className="text-lg text-amber-700">
+                  or click to browse your collection
+                </p>
+                <div className="text-sm text-amber-600 space-y-1">
+                  <p>📷 JPEG, PNG formats supported</p>
+                  <p>📏 Maximum size: 10MB</p>
+                  <p>🎨 Professional film emulation included</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>      {error && (
+        <div className="mb-8 p-4 bg-red-50 border-l-4 border-red-400 rounded-md flex items-center shadow-md">
+          <ExclamationCircleIcon className="h-6 w-6 text-red-500 mr-3 flex-shrink-0" />
+          <div>
+            <h4 className="font-medium text-red-800">Upload Error</h4>
+            <span className="text-red-700">{error}</span>
+          </div>
         </div>
       )}
 
       {isUploading && (
-        <div className="mt-8 flex justify-center">
-          <div className="film-spinner" aria-label="Uploading..."></div>
-          <span className="sr-only">Uploading...</span>
+        <div className="mb-8 flex flex-col items-center justify-center py-8">
+          <div className="film-spinner mb-4" aria-label="Uploading..."></div>
+          <div className="text-center">
+            <p className="text-xl font-vintage text-amber-800 mb-2">
+              Preparing your photo...
+            </p>
+            <p className="text-amber-600">
+              Getting ready for vintage transformation
+            </p>
+          </div>
         </div>
       )}
 
-      {/* Storage Status Indicator */}
+      {/* Storage Status with Vintage Styling */}
       {storageStatus && (
-        <div className={`mt-4 p-3 rounded-md flex items-center ${
+        <div className={`mb-8 p-4 rounded-lg flex items-center shadow-md ${
           storageStatus.status === 'active' 
-            ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
-            : 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800'
+            ? 'bg-green-50 border border-green-200' 
+            : 'bg-yellow-50 border border-yellow-200'
         }`}>
-          <div className={`h-3 w-3 rounded-full mr-2 ${
-            storageStatus.status === 'active' ? 'bg-green-500' : 'bg-yellow-500'
+          <div className={`h-4 w-4 rounded-full mr-3 ${
+            storageStatus.status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'
           }`}></div>
-          <span className={`${
-            storageStatus.status === 'active' 
-              ? 'text-green-700 dark:text-green-400' 
-              : 'text-yellow-700 dark:text-yellow-400'
-          }`}>
-            Storage: {storageStatus.is_enabled_storage === 'disabled' 
-              ? 'Disabled' 
-              : `${storageStatus.is_enabled_storage.charAt(0).toUpperCase() + storageStatus.is_enabled_storage.slice(1)} (${storageStatus.status})`}
-          </span>
+          <div>
+            <span className="font-medium text-gray-800">Studio Status:</span>
+            <span className={`ml-2 ${
+              storageStatus.status === 'active' 
+                ? 'text-green-700' 
+                : 'text-yellow-700'
+            }`}>
+              {storageStatus.is_enabled_storage === 'disabled' 
+                ? 'Offline Mode' 
+                : `${storageStatus.is_enabled_storage.charAt(0).toUpperCase() + storageStatus.is_enabled_storage.slice(1)} (${storageStatus.status})`}
+            </span>
+          </div>
         </div>
       )}
 
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-3">
-          Features
+      {/* Enhanced Features Section */}
+      <div className="card-vintage p-8">
+        <h2 className="vintage-heading text-2xl mb-6 text-center">
+          🎬 Professional Film Features
         </h2>
-        <ul className="space-y-2 text-gray-600 dark:text-gray-300">
-          <li className="flex items-center">
-            <span className="mr-2">•</span>
-            <span>Automatic vintage filter with light leaks and film grain</span>
-          </li>
-          <li className="flex items-center">
-            <span className="mr-2">•</span>
-            <span>Smart cropping that detects faces and important objects</span>
-          </li>
-          <li className="flex items-center">
-            <span className="mr-2">•</span>
-            <span>Multiple aspect ratio options (1:1, 4:3, 16:9)</span>
-          </li>
-          <li className="flex items-center">
-            <span className="mr-2">•</span>
-            <span>Custom cropping with draggable handles</span>
-          </li>
-        </ul>
+        
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <h3 className="font-vintage text-lg text-amber-800 mb-3">📸 Film Emulation</h3>
+            <ul className="space-y-3 text-amber-700">
+              <li className="flex items-start">
+                <span className="mr-3 text-amber-600">•</span>
+                <div>
+                  <strong>Classic Chrome:</strong> Muted, sophisticated tones
+                </div>
+              </li>
+              <li className="flex items-start">
+                <span className="mr-3 text-amber-600">•</span>
+                <div>
+                  <strong>Pro Neg Hi:</strong> Creamy skin tones, lifted blacks
+                </div>
+              </li>
+              <li className="flex items-start">
+                <span className="mr-3 text-amber-600">•</span>
+                <div>
+                  <strong>Velvia:</strong> Punchy, vibrant colors
+                </div>
+              </li>
+              <li className="flex items-start">
+                <span className="mr-3 text-amber-600">•</span>
+                <div>
+                  <strong>Classic Neg:</strong> Faded, nostalgic aesthetic
+                </div>
+              </li>
+            </ul>
+          </div>
+          
+          <div className="space-y-4">
+            <h3 className="font-vintage text-lg text-amber-800 mb-3">✂️ Smart Cropping</h3>
+            <ul className="space-y-3 text-amber-700">
+              <li className="flex items-start">
+                <span className="mr-3 text-amber-600">•</span>
+                <div>
+                  <strong>AI Detection:</strong> Automatic face and object recognition
+                </div>
+              </li>
+              <li className="flex items-start">
+                <span className="mr-3 text-amber-600">•</span>
+                <div>
+                  <strong>Multiple Ratios:</strong> Square, 4:3, 16:9 formats
+                </div>
+              </li>
+              <li className="flex items-start">
+                <span className="mr-3 text-amber-600">•</span>
+                <div>
+                  <strong>Custom Crop:</strong> Precision control with visual overlay
+                </div>
+              </li>
+              <li className="flex items-start">
+                <span className="mr-3 text-amber-600">•</span>
+                <div>
+                  <strong>Film Grain:</strong> Optional authentic texture overlay
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="mt-8 p-4 bg-amber-100 rounded-lg border border-amber-300">
+          <p className="text-center text-amber-800 font-vintage italic">
+            "Every photo tells a story. Let us help you tell it with the timeless beauty of film."
+          </p>
+        </div>
       </div>
     </div>
   );
