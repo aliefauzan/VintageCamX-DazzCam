@@ -91,6 +91,24 @@ gcp-credentials.json
 /processed
 /temp-uploads
 /storage
+backend/uploads/
+backend/processed/
+backend/metadata/
+backend/temp/
+backend/backups/
+
+# Backend test and development files
+backend/test-*.js
+backend/test-*.ts
+backend/*-test.js
+backend/*-test.ts
+backend/simple-api-test.js
+backend/migrate-*.ts
+backend/fix-*.js
+backend/startup-check.ts
+backend/kill-port.js
+backend/package.json.new
+backend/package.json.backup
 
 # Local development certificates
 *.pem
